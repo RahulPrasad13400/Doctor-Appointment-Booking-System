@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 @import "tailwindcss";
+@import 'tailwind-scrollbar-hide/v4';
 
 *{
   font-family : Outfit;
@@ -22,4 +23,3 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;             /* Chrome, Safari, Opera */
   }
-

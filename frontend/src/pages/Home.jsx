@@ -11,5 +11,5 @@ export default function Home() {
       <TopDoctors />
       <Banner />
     </div>
-  )
+  );
 }

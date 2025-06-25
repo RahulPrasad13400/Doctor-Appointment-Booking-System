@@ -1,10 +1,15 @@
-import { createContext } from "react";
+import { createContext, useState } from "react";
 
-const AdminContext = createContext();
+export const AdminContext = createContext();
 
 export default function AdminContextProvider({ children }) {
+
+  const [aToken, setAToken] = useState(localStorage.getItem('aToken')||'')
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL //  IMPORTANT (.ENV FILE IL NINN VALUE KITTAN VENDI FRONT ENDIL)
+
   return (
-    <AdminContext.Provider value={{}}>
+    <AdminContext.Provider value={{aToken, setAToken, backendUrl}}>
       {children}    
     </AdminContext.Provider>
   )

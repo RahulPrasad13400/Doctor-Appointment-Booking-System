@@ -1,4 +1,10 @@
+import { useContext } from "react";
 import { useState } from "react";
+import { AppContext } from "../context/AppContext";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function Login() {
   const [state, setState] = useState("Sign Up");
@@ -6,12 +12,52 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
+  const { token, setToken, backendUrl } = useContext(AppContext);
+
+  const navigate = useNavigate()
+
   const onSubmitHandler = async (event) => {
     event.preventDefault(); // prevents the reloading of page on submitting
+
+    try {
+      if (state === "Sign Up") {
+        const { data } = await axios.post(backendUrl + "/api/user/register", {
+          name,
+          email,
+          password,
+        });
+        if (data?.success) {
+          localStorage.setItem("token", data?.token);
+          setToken(data?.token);
+        } else {
+          toast.error(data?.message || "Something went wrong in sign up");
+        }
+      } else {
+        const { data } = await axios.post(backendUrl + "/api/user/login", {
+          email,
+          password,
+        });
+        if (data?.success) {
+          localStorage.setItem("token", data?.token);
+          setToken(data?.token);
+        } else {
+          toast.error(data?.message || "Something went wrong in login");
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message || `Something went wrong in ${state}`);
+    }
   };
 
+  useEffect(()=>{
+    if(token){
+      navigate('/')
+    }
+  },[token])
+
   return (
-    <form className="min-h-[80vh] flex items-center">
+    <form className="min-h-[80vh] flex items-center" onSubmit={onSubmitHandler}>
       <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 rounded-xl text-zinc-600 text-sm shadow-lg">
         <p className="text-2xl font-semibold">
           {state === "Sign Up" ? "Create Account" : "Login"}
@@ -53,7 +99,7 @@ export default function Login() {
             required
           />
         </div>
-        <button className="bg-primary text-white w-full py-2 ">
+        <button className="bg-primary text-white w-full py-2" type='submit'>
           {state === "Sign Up" ? "Create Account" : "Login"}
         </button>
         {state === "Sign Up" ? (

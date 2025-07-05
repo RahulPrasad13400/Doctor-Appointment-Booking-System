@@ -4,6 +4,9 @@ import userModel from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import { v2 as cloudinary } from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
+import appointmentModel from "../models/appointmentModel.js";
+import Razorpay from "razorpay";
+
 
 // API TO REGISTER USER
 const registerUser = async (req, res) => {
@@ -188,8 +191,42 @@ const bookAppointment = async (req, res) => {
           success: false,
           message: "Slot not available",
         });
+      } else {
+        slots_booked[slotDate].push(slotTime);
       }
+    } else {
+      // IF YOU ARE THE FIRST ONE TO BOOK ON THAT DATE
+      slots_booked[slotDate] = [];
+      slots_booked[slotDate].push(slotTime);
     }
+
+    // USER
+    const userData = await userModel.findById(userId).select("-password");
+
+    // IT IS DELETED HERE BECAUSE THE DOC DATA DONT WANT TO CONTAIN ITEMS LIKE SLOTS BOOKED THAT WE PASS AS THE APPOINTMENT DATA TO THE FRONT END
+    delete docData.slots_booked;
+
+    const appointmentData = {
+      userId,
+      docId,
+      userData,
+      docData,
+      amount: docData.fees,
+      slotTime,
+      slotDate,
+      date: Date.now(),
+    };
+
+    const newAppointment = new appointmentModel(appointmentData);
+    await newAppointment.save();
+
+    // save new slots data in docData
+    await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+
+    res.json({
+      success: true,
+      message: "Appointment booked",
+    });
   } catch (error) {
     console.log(error);
     res.json({
@@ -199,4 +236,101 @@ const bookAppointment = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, getProfile, updateProfile, bookAppointment };
+// API TO GET APPOINTMENTS FOR MY-APPOINTMENT PAGE
+const listAppointment = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const appointments = await appointmentModel.find({ userId });
+
+    res.json({
+      success: true,
+      appointments,
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// API TO CANCEL APPOINTMENTS
+const cancelAppointment = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const {appointmentId} = req.body;
+
+    const appointmentData = await appointmentModel.findById(appointmentId);
+
+    // VERIFY APPOINTMENT USER
+    if (appointmentData.userId !== userId) {
+      return res.json({
+        success: false,
+        message: "Unauthorized action",
+      });
+    }
+
+    await appointmentModel.findByIdAndUpdate(appointmentId, {
+      cancelled: true,
+    });
+
+    // RELEASING DOCTOR SLOT
+    const { docId, slotDate, slotTime } = appointmentData;
+
+    const docData = await doctorModel.findById(docId);
+
+    let slots_booked = docData.slots_booked;
+    slots_booked[slotDate] = slots_booked[slotDate].filter(
+      (time) => time !== slotTime
+    );
+
+    await doctorModel.findByIdAndUpdate(docId, {slots_booked})
+
+    res.json({
+      success : true,
+      message : "Appointment cancelled"
+    })
+
+  } catch (error) {
+    console.log(error);
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const razorpayInstance = new Razorpay({
+  key_id : '',
+  key_secret : '',
+})
+
+// API TO MAKE PAYMENT USING RAZORPAY
+const paymentRazorpay = async (req, res) => {
+  try {
+    const {appointmentId} = req.body
+    const appointmentData = await appointmentModel.findById(appointmentId)
+    const fee = appointmentData.amount
+
+
+
+  } catch (error) {
+    console.log(error);
+    res.json({
+      success: false,
+      message: error.message,
+    });    
+  }
+}
+
+export {
+  registerUser,
+  loginUser,
+  getProfile,
+  updateProfile,
+  bookAppointment,
+  listAppointment,
+  cancelAppointment,
+  paymentRazorpay
+};

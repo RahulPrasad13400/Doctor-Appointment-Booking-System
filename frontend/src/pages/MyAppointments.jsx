@@ -77,7 +77,7 @@ export default function MyAppointments() {
         try {
           const { data } = await axios.post(
             backendUrl + "/api/user/verifyRazorpay",
-            { response },
+            { order_id: response.razorpay_order_id },
             { headers: { token } }
           );
 
@@ -160,7 +160,12 @@ export default function MyAppointments() {
               </div>
               <div></div>
               <div className="flex flex-col gap-2 justify-end">
-                {!item.cancelled && (
+                {item.payment && !item.cancelled && (
+                  <button className="sm:min-w-48 py-2 border rounded text-green-500">
+                    Paid
+                  </button>
+                )}
+                {!item.cancelled && !item.payment && (
                   <button
                     className="text-sm text-stone-500 text-center sm:min-w-48 py-2 border border-gray-300 rounded hover:bg-primary hover:text-white transition-all duration-300"
                     onClick={() => appointmentRazorpay(item._id)}

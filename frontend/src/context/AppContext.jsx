@@ -64,7 +64,8 @@ const AppContextProvider = ({ children }) => {
     userData,
     setUserData,
     backendUrl,
-    loadUserProfileData
+    loadUserProfileData,
+    getDoctorsData
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

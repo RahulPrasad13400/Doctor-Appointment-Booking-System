@@ -301,10 +301,10 @@ const cancelAppointment = async (req, res) => {
   }
 };
 
-const razorpayInstance = new Razorpay({
-  key_id : '',
-  key_secret : '',
-})
+// const razorpayInstance = new Razorpay({
+//   key_id : '',
+//   key_secret : '',
+// })
 
 // API TO MAKE PAYMENT USING RAZORPAY
 const paymentRazorpay = async (req, res) => {

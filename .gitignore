@@ -7,6 +7,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Ignore node_modules in all folders
+**/node_modules/
+
 node_modules
 dist
 dist-ssr
@@ -26,3 +29,7 @@ dist-ssr
 # Environment variables
 .env
 .env.*
+
+# Ignore all env files in any subdirectory
+**/.env
+**/.env.*

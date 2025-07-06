@@ -7,7 +7,6 @@ import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
 import Razorpay from "razorpay";
 
-
 // API TO REGISTER USER
 const registerUser = async (req, res) => {
   try {
@@ -259,7 +258,7 @@ const listAppointment = async (req, res) => {
 const cancelAppointment = async (req, res) => {
   try {
     const userId = req.userId;
-    const {appointmentId} = req.body;
+    const { appointmentId } = req.body;
 
     const appointmentData = await appointmentModel.findById(appointmentId);
 
@@ -285,13 +284,12 @@ const cancelAppointment = async (req, res) => {
       (time) => time !== slotTime
     );
 
-    await doctorModel.findByIdAndUpdate(docId, {slots_booked})
+    await doctorModel.findByIdAndUpdate(docId, { slots_booked });
 
     res.json({
-      success : true,
-      message : "Appointment cancelled"
-    })
-
+      success: true,
+      message: "Appointment cancelled",
+    });
   } catch (error) {
     console.log(error);
     res.json({
@@ -301,28 +299,77 @@ const cancelAppointment = async (req, res) => {
   }
 };
 
-// const razorpayInstance = new Razorpay({
-//   key_id : '',
-//   key_secret : '',
-// })
+const razorpayInstance = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 // API TO MAKE PAYMENT USING RAZORPAY
 const paymentRazorpay = async (req, res) => {
   try {
-    const {appointmentId} = req.body
-    const appointmentData = await appointmentModel.findById(appointmentId)
-    const fee = appointmentData.amount
+    const { appointmentId } = req.body;
+    const appointmentData = await appointmentModel.findById(appointmentId);
 
+    if (!appointmentData) {
+      return res.json({
+        success: false,
+        message: "Appointment cancelled or not found",
+      });
+    }
 
+    // CREATING OPTIONS FOR RAZORPAY PAYMENT
+    const options = {
+      amount: appointmentData.amount * 100,
+      currency: process.env.CURRENCY,
+      receipt: appointmentId,
+    };
 
+    // CREATION OF AN ORDER
+    const order = await razorpayInstance.orders.create(options);
+
+    res.json({
+      success: true,
+      order,
+    });
   } catch (error) {
     console.log(error);
     res.json({
       success: false,
       message: error.message,
-    });    
+    });
   }
-}
+};
+
+// API TO VERIFY THE PAYMENT OF RAZORPAY
+const verifyRazorpay = async (req, res) => {
+  try {
+    const { razorpay_order_id } = req.body;
+
+    const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
+
+    if (orderInfo.status === "paid") {
+      await appointmentModel.findByIdAndUpdate(orderInfo.receipt, {
+        payment: true,
+      });
+
+      return res.json({
+        success: true,
+        message: "Payment successfull",
+      });
+    } else {
+      return res.json({
+        success: false,
+        message: "Payment failed",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 export {
   registerUser,
@@ -332,5 +379,6 @@ export {
   bookAppointment,
   listAppointment,
   cancelAppointment,
-  paymentRazorpay
+  paymentRazorpay,
+  verifyRazorpay,
 };

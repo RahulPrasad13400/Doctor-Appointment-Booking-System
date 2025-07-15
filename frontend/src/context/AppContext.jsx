@@ -7,7 +7,9 @@ export const AppContext = createContext();
 
 const AppContextProvider = ({ children }) => {
   const currencySymbol = "$";
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  // const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const backendUrl =
+    "https://doctor-appointment-booking-system-yhss.onrender.com";
 
   const [doctors, setDoctors] = useState([]);
   const [token, setToken] = useState(localStorage.getItem("token") || "");
@@ -29,10 +31,10 @@ const AppContextProvider = ({ children }) => {
 
   const loadUserProfileData = async () => {
     try {
-      const {data} = await axios.get(backendUrl + "/api/user/get-profile", {
+      const { data } = await axios.get(backendUrl + "/api/user/get-profile", {
         headers: { token },
       });
-      console.log("data : ", data)
+      console.log("data : ", data);
       if (data.success) {
         setUserData(data.userData);
       } else {
@@ -65,7 +67,7 @@ const AppContextProvider = ({ children }) => {
     setUserData,
     backendUrl,
     loadUserProfileData,
-    getDoctorsData
+    getDoctorsData,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

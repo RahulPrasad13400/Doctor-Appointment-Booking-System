@@ -10,7 +10,10 @@ export default function AdminContextProvider({ children }) {
   const [appointments, setAppointments] = useState([]);
   const [dashData, setDashData] = useState(false);
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  // const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const backendUrl =
+    "https://doctor-appointment-booking-system-yhss.onrender.com";
+
   //  IMPORTANT (.ENV FILE IL NINN VALUE KITTAN VENDI FRONT ENDIL)
 
   const getAllDoctors = async () => {
@@ -94,7 +97,7 @@ export default function AdminContextProvider({ children }) {
       if (data.success) {
         setDashData(data.dashData);
       } else {
-        toast.error(data.message)
+        toast.error(data.message);
       }
     } catch (error) {
       toast.error(error.message);
@@ -116,7 +119,7 @@ export default function AdminContextProvider({ children }) {
         setAppointments,
         cancelAppointment,
         getDashData,
-        dashData
+        dashData,
       }}
     >
       {children}

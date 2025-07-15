@@ -45,7 +45,7 @@ export default function Navbar() {
       <div className="flex items-center gap-4">
         {token && userData ? (
           <div className="flex items-center gap-2 cursor-pointer group relative">
-            <img src={userData.image} className="w-8 rounded-full" alt="" />
+            <img src={userData.image} className="w-8 rounded-full aspect-square" alt="" />
             <img src={assets.dropdown_icon} className="w-2.5" alt="" />
             <div className="absolute top-0 right-0 pt-14 text-base font-medium text-gray-600 z-20 hidden group-hover:block">
               <div className="min-w-48 bg-stone-100 rounded flex flex-col gap-4 p-4">
